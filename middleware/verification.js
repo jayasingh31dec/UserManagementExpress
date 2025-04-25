@@ -1,32 +1,19 @@
-const jwt = require("jsonwebtoken")
-const User = require("../model/user")
+const jwt = require("jsonwebtoken");
 
+const verify_token = (req, res, next) => {
+  const token = req.header("Authorization");
 
-
-const verify_token= async (req, res , next)=>{
-let token = req.header('Authorization');
-if(token){
-
-  try{
-    
-    let payload=jwt.verify(token,process.env.JwT_SECRET)
-    let user = await User.findById(payload.id)
-    req.user = user
-    next()
-
-
+  if (!token) {
+    return res.status(401).json({ message: "No access!" });
   }
 
-  catch{
-    res.send('Invalid Token!!')
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET); // ✅ Correct variable name
+    req.user = { userId: payload.id };  // ✅ Pass only the userId
+    next();
+  } catch {
+    res.status(401).json({ message: "Invalid token!" });
   }
+};
 
-}
-else{
-    res.send('no Access!')
-}
-
-}
-
-
-module.exports = verify_token
+module.exports = verify_token;
